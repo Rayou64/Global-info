@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>GLOBAL INFO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+        }
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+        }
+        h2 {
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 5px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        button {
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #162d6b;
+        }
+        .post {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        .post img, .post video {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .actions button {
+            width: auto;
+            margin-right: 10px;
+        }
+        .comments {
+            display: none;
+            margin-top: 10px;
+        }
+        .comment {
+            background: #f1f1f1;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+        }
+        small {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌍 GLOBAL INFO</h1>
+    <p>Information citoyenne & chroniques internationales</p>
+</header>
+
+<div class="container">
+
+    <!-- INFORMATION CITOYENNE -->
+    <h2>📰 Information citoyenne</h2>
+    <input type="text" id="infoTitle" placeholder="Titre de l'information">
+    <textarea id="infoContent" placeholder="Décris l'information citoyenne..."></textarea>
+    <input type="file" id="mediaFile" accept="image/*,video/*">
+    <button onclick="publishInfo()">Publier</button>
+
+    <div id="infoFeed"></div>
+
+    <!-- CHRONIQUE INTERNATIONALE -->
+    <h2>🌐 Chronique & questions internationales</h2>
+    <input type="text" id="questionTitle" placeholder="Question d'actualité internationale">
+    <textarea id="answerContent" placeholder="Ta réponse / analyse..."></textarea>
+    <button onclick="publishChronique()">Publier la chronique</button>
+
+    <div id="chroniqueFeed"></div>
+
+</div>
+
+<script>
+    function createPost(title, content, mediaElement) {
+        const post = document.createElement("div");
+        post.className = "post";
+
+        post.innerHTML = `
+            <h3>${title}</h3>
+            <p>${content}</p>
+            <small>Publié sur Global Info</small>
+            <div class="actions">
+                <button onclick="likePost(this)">❤️ Like (<span>0</span>)</button>
+                <button onclick="toggleComments(this)">💬 Commenter</button>
+            </div>
+            <div class="comments">
+                <input type="text" placeholder="Écris un commentaire...">
+                <button onclick="addComment(this)">Ajouter</button>
+                <div class="commentList"></div>
+            </div>
+        `;
+
+        if (mediaElement) {
+            post.insertBefore(mediaElement, post.children[3]);
+        }
+
+        return post;
+    }
+
+    function publishInfo() {
+        const title = infoTitle.value;
+        const content = infoContent.value;
+        const file = mediaFile.files[0];
+
+        if (!title || !content) {
+            alert("Veuillez remplir le titre et le contenu.");
+            return;
+        }
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                let media;
+                if (file.type.startsWith("video")) {
+                    media = document.createElement("video");
+                    media.controls = true;
+                } else {
+                    media = document.createElement("img");
+                }
+                media.src = reader.result;
+                infoFeed.prepend(createPost(title, content, media));
+            };
+            reader.readAsDataURL(file);
+        } else {
+            infoFeed.prepend(createPost(title, content, null));
+        }
+
+        infoTitle.value = "";
+        infoContent.value = "";
+        mediaFile.value = "";
+    }
+
+    function publishChronique() {
+        const title = questionTitle.value;
+        const content = answerContent.value;
+
+        if (!title || !content) {
+            alert("Veuillez remplir la question et la réponse.");
+            return;
+        }
+
+        chroniqueFeed.prepend(createPost(title, content, null));
+
+        questionTitle.value = "";
+        answerContent.value = "";
+    }
+
+    function likePost(btn) {
+        const span = btn.querySelector("span");
+        span.textContent = parseInt(span.textContent) + 1;
+    }
+
+    function toggleComments(btn) {
+        const comments = btn.parentElement.nextElementSibling;
+        comments.style.display = comments.style.display === "none" ? "block" : "none";
+    }
+
+    function addComment(btn) {
+        const input = btn.previousElementSibling;
+        if (!input.value) return;
+
+        const comment = document.createElement("div");
+        comment.className = "comment";
+        comment.textContent = input.value;
+
+        btn.nextElementSibling.appendChild(comment);
+        input.value = "";
+    }
+</script>
+
+</body>
+</html>
